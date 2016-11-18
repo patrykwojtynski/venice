@@ -3,33 +3,38 @@ require 'net/https'
 require 'uri'
 
 module Venice
-  ITUNES_PRODUCTION_RECEIPT_VERIFICATION_ENDPOINT = "https://buy.itunes.apple.com/verifyReceipt"
-  ITUNES_DEVELOPMENT_RECEIPT_VERIFICATION_ENDPOINT = "https://sandbox.itunes.apple.com/verifyReceipt"
+  APPSTORE_PROD_ENDPOINT = "https://buy.itunes.apple.com/verifyReceipt".freeze
+  APPSTORE_DEV_ENDPOINT = "https://sandbox.itunes.apple.com/verifyReceipt".freeze
 
   class Client
+    
+    class NoVerificationEndpointError < StandardError; end
+    
     attr_accessor :verification_url
     attr_writer :shared_secret
 
     class << self
       def development
         client = self.new
-        client.verification_url = ITUNES_DEVELOPMENT_RECEIPT_VERIFICATION_ENDPOINT
+        client.verification_url = APPSTORE_DEV_ENDPOINT
         client
       end
 
       def production
         client = self.new
-        client.verification_url = ITUNES_PRODUCTION_RECEIPT_VERIFICATION_ENDPOINT
+        client.verification_url = APPSTORE_PROD_ENDPOINT
         client
       end
     end
 
     def initialize
       @verification_url = ENV['IAP_VERIFICATION_ENDPOINT']
+      @shared_secret = ENV['IAP_SHARED_SECRET']
     end
 
     def verify!(data, options = {})
-      @verification_url ||= ITUNES_DEVELOPMENT_RECEIPT_VERIFICATION_ENDPOINT
+      raise NoVerificationEndpointError if @verification_url.to_s.empty?
+      
       @shared_secret = options[:shared_secret] if options[:shared_secret]
 
       json = json_response_from_verifying_data(data)
@@ -38,23 +43,9 @@ module Venice
 
       case status
       when 0, 21006
-        receipt = Receipt.new(receipt_attributes)
-
-        # From Apple docs:
-        # > Only returned for iOS 6 style transaction receipts for auto-renewable subscriptions.
-        # > The JSON representation of the receipt for the most recent renewal
-        if latest_receipt_info_attributes = json['latest_receipt_info']
-          # AppStore returns 'latest_receipt_info' even if we use over iOS 6. Besides, its format is an Array.
-          receipt.latest_receipt_info = []
-          latest_receipt_info_attributes.each do |latest_receipt_info_attribute|
-            # latest_receipt_info format is identical with in_app
-            receipt.latest_receipt_info << InAppReceipt.new(latest_receipt_info_attribute)
-          end
-        end
-
-        return receipt
+        return Receipt.new(receipt_attributes)
       else
-        raise Receipt::VerificationError.new(status, receipt)
+        raise VerificationError.new(status)
       end
     end
 
@@ -62,7 +53,7 @@ module Venice
 
     def json_response_from_verifying_data(data)
       parameters = {
-        'receipt-data' => data
+        'receipt-data': data
       }
 
       parameters['password'] = @shared_secret if @shared_secret

@@ -2,10 +2,19 @@ require 'spec_helper'
 
 describe Venice::Client do
   let(:receipt_data) { "asdfzxcvjklqwer" }
-  let(:client) { subject }
 
   describe "#verify!" do
+    context "with no verification_url" do
+      let(:client) { subject }
+      
+      it "should raise error" do
+         expect { client.verify!("foo") }.to raise_error(Venice::Client::NoVerificationEndpointError)
+      end
+    end
+    
     context "no shared_secret" do
+      let(:client) { Venice::Client.development }
+      
       before do
         client.shared_secret = nil
         Venice::Receipt.stub :new
@@ -21,6 +30,7 @@ describe Venice::Client do
     end
 
     context "with a shared secret" do
+      let(:client) { Venice::Client.development }
       let(:secret) { "shhhhhh" }
 
       before do
@@ -42,6 +52,7 @@ describe Venice::Client do
       end
 
       context "set secret when verification" do
+        let(:client) { Venice::Client.development }
         let(:options) { {shared_secret: secret}  }
 
         it "should include the secret in the post" do
@@ -56,6 +67,8 @@ describe Venice::Client do
     end
 
     context "with a latest receipt info attribute" do
+      let(:client) { Venice::Client.development }
+      
       before do
         client.stub(:json_response_from_verifying_data).and_return(response)
       end
@@ -88,11 +101,6 @@ describe Venice::Client do
             }
           ]
         }
-      end
-
-      it "should create a latest receipt" do
-        receipt = client.verify! 'asdf'
-        receipt.latest_receipt_info.should_not be_nil
       end
     end
 
