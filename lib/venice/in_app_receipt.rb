@@ -55,6 +55,9 @@ module Venice
     # This key is not present for receipts created in the test environment.
     attr_reader :version_external_identifier
 
+    # This key is only present for auto-renewable subscription receipts, otherwise is empty
+    attr_reader :is_trial_period
+
     def initialize(attributes = {})
       @quantity = Integer(attributes['quantity']) if attributes['quantity']
       @product_id = attributes['product_id']
@@ -71,7 +74,10 @@ module Venice
       
       expires_date = attributes['expires_date']
       @expires_date = DateTime.parse(expires_date) if expires_date
-      
+
+      is_trial_period = attributes['is_trial_period']
+      @is_trial_period = is_trial_period.present? ? is_trial_period == 'true' : nil
+
       cancelation_date = attributes['cancellation_date']
       @cancellation_date = DateTime.parse(cancelation_date) if cancelation_date
     end
