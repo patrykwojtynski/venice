@@ -26,6 +26,7 @@ module Venice
     # Original json response from AppStore
     attr_reader :original_json_response
 
+    attr_accessor :environment
     attr_accessor :latest_receipt_info
     
     def initialize(attributes = {})

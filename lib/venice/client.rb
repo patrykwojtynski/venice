@@ -38,12 +38,13 @@ module Venice
       @shared_secret = options[:shared_secret] if options[:shared_secret]
 
       json = json_response_from_verifying_data(data)
-      status, receipt_attributes = json['status'].to_i, json['receipt']
+      status, receipt_attributes, environment = json['status'].to_i, json['receipt'], json['environment']
       receipt_attributes['original_json_response'] = json if receipt_attributes
 
       case status
       when 0, 21006
         receipt = Receipt.new(receipt_attributes)
+        receipt.environment = environment
 
         # From Apple docs:
         # > Only returned for iOS 6 style transaction receipts for auto-renewable subscriptions.
