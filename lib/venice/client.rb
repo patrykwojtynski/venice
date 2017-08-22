@@ -39,12 +39,15 @@ module Venice
 
       json = json_response_from_verifying_data(data)
       status, receipt_attributes, environment = json['status'].to_i, json['receipt'], json['environment']
-      receipt_attributes['original_json_response'] = json if receipt_attributes
+
+      if receipt_attributes
+        receipt_attributes['original_json_response'] = json
+        receipt_attributes['environment'] = environment
+      end
 
       case status
       when 0, 21006
         receipt = Receipt.new(receipt_attributes)
-        receipt.environment = environment
 
         # From Apple docs:
         # > Only returned for iOS 6 style transaction receipts for auto-renewable subscriptions.
