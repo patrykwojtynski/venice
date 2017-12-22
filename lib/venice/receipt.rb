@@ -66,7 +66,7 @@ module Venice
 
     class << self
       def verify(data, options = {})
-        verify!(data, options)
+        verify!(data, options) rescue false
       end
 
       def verify!(data, options = {})
