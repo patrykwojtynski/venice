@@ -1,9 +1,10 @@
 module Venice
   class VerificationError < StandardError
-    attr_accessor :code
+    attr_accessor :code, :retryable
 
-    def initialize(code)
+    def initialize(code, retryable: false)
       @code = code.to_i
+      @retryable = retryable.to_s == 'true'
     end
 
     def message
@@ -25,7 +26,7 @@ module Venice
         when 21008
           "This receipt is a production receipt, but it was sent to the sandbox service for verification."
         else
-          "Unknown Error: #{@code}"
+          "Unknown Error: #{code}. Retryable: #{retryable}"
       end
     end
   end
