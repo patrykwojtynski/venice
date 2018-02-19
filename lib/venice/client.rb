@@ -63,7 +63,7 @@ module Venice
 
         return receipt
       else
-        retryable = json['is-retryable']
+        retryable = json['is-retryable'] || json['is_retryable']
         raise VerificationError.new(status, retryable: retryable)
       end
     end
