@@ -77,7 +77,7 @@ module Venice
       orig_date = attributes['original_purchase_date']
       @original_purchase_date = DateTime.parse(orig_date) if orig_date
 
-      expires_date = attributes['expires_date']
+      expires_date = attributes['expires_date_formatted'] || attributes['expires_date']
       @expires_date = DateTime.parse(expires_date) if expires_date
 
       is_trial_period = attributes['is_trial_period']
