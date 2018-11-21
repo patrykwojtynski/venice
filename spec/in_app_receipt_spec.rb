@@ -12,7 +12,8 @@ describe Venice::InAppReceipt do
         "purchase_date" => "2014-05-28 14:47:53 Etc/GMT",
         "original_transaction_id" => "140xxx867509",
         "original_purchase_date" => "2014-05-28 14:47:53 Etc/GMT",
-        "is_trial_period" => 'false',
+        "is_trial_period" => 'true',
+        "is_in_intro_offer_period" => 'false',
         "version_external_identifier" => "123",
         "app_item_id" => 'com.foo.app1',
         "expires_date" => "2014-06-28 07:47:53 America/Los_Angeles",
@@ -36,6 +37,8 @@ describe Venice::InAppReceipt do
     its(:purchase_date) { should be_instance_of DateTime }
     its(:cancellation_date) { should be_instance_of DateTime }
     its(:cancellation_reason) { '0' }
+    its(:is_trial_period) { true }
+    its(:is_in_intro_offer_period) { false }
 
     it "should output a hash with attributes" do
       in_app_receipt.to_h.should include(
@@ -49,6 +52,8 @@ describe Venice::InAppReceipt do
         :purchase_date => "Wed, 28 May 2014 14:47:53 GMT",
         :quantity => 1,
         :transaction_id => "1000000070107235",
+        :is_trial_period => true,
+        :is_in_intro_offer_period => false,
         :version_external_identifier => "123"
       )
     end

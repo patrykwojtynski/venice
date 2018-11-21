@@ -62,6 +62,10 @@ module Venice
     # This key is only present for auto-renewable subscription receipts, otherwise is empty
     attr_reader :is_trial_period
 
+    # Only present for auto-renewable subscription receipts. Value is true if the customer’s subscription is
+    # currently in an introductory price period, false if not, nil if key is not present on receipt.
+    attr_reader :is_in_intro_offer_period
+
     def initialize(attributes = {})
       @quantity = Integer(attributes['quantity']) if attributes['quantity']
       @product_id = attributes['product_id']
@@ -80,8 +84,8 @@ module Venice
       expires_date = attributes['expires_date_formatted'] || attributes['expires_date']
       @expires_date = DateTime.parse(expires_date) if expires_date
 
-      is_trial_period = attributes['is_trial_period']
-      @is_trial_period = is_trial_period.to_s.length > 0 ? is_trial_period == 'true' : nil
+      @is_trial_period = attributes['is_trial_period'].to_s == 'true' if attributes['is_trial_period']
+      @is_in_intro_offer_period = attributes['is_in_intro_offer_period'] == 'true' if attributes['is_in_intro_offer_period']
 
       cancelation_date = attributes['cancellation_date']
       @cancellation_date = DateTime.parse(cancelation_date) if cancelation_date
@@ -99,6 +103,8 @@ module Venice
         original_purchase_date: (@original_purchase_date.httpdate rescue nil),
         original_transaction_id: @original_transaction_id,
         app_item_id: @app_item_id,
+        is_trial_period: @is_trial_period,
+        is_in_intro_offer_period: @is_in_intro_offer_period,
         version_external_identifier: @version_external_identifier,
       }
     end
